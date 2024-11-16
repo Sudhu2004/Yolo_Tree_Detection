@@ -21,7 +21,7 @@ fsspec==2024.10.0
 gitdb==4.0.11
 GitPython==3.1.43
 idna==3.7
-inference-sdk==0.27.0
+inference-sdk==0.9.18
 Jinja2==3.1.4
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
