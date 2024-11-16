@@ -100,9 +100,9 @@ if uploaded_file:
     # st.pyplot(fig_original)
 
     # Visualize merged boxes
-    st.write(f"A total of {len(merged_boxes)} have been detected")
-    st.write("Visualizing merged bounding boxes...")
-    fig_merged = draw_boxes(image, merged_boxes, color='g', label='Merged')
+    st.write(f"A total of {len(merged_boxes)} trees have been detected")
+    st.write("Visualizing bounding boxes.")
+    fig_merged = draw_boxes(image, merged_boxes, color='g', label='Tree')
     st.pyplot(fig_merged)
 
     # Clean up temporary file
