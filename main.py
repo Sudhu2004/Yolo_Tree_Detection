@@ -1,123 +1,6 @@
-# import streamlit as st
-# from PIL import Image
-# import torch
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
-# from ultralytics import YOLO
-# import os
-
-# # Define functions for IoU and box merging
-# def compute_iou(box1, box2):
-#     x1 = max(box1[0], box2[0])
-#     y1 = max(box1[1], box2[1])
-#     x2 = min(box1[2], box2[2])
-#     y2 = min(box1[3], box2[3])
-
-#     intersection = max(0, x2 - x1) * max(0, y2 - y1)
-#     area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
-#     area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
-#     union = area1 + area2 - intersection
-#     iou = intersection / union if union > 0 else 0
-
-#     return iou
-
-# def merge_boxes(boxes, iou_threshold=0.5):
-#     merged_boxes = []
-#     used = set()
-
-#     for i, box1 in enumerate(boxes):
-#         if i in used:
-#             continue
-#         merged = box1.clone()
-#         used.add(i)
-
-#         for j, box2 in enumerate(boxes):
-#             if j in used:
-#                 continue
-#             iou = compute_iou(merged, box2)
-#             if iou > iou_threshold:
-#                 merged[0] = min(merged[0], box2[0])
-#                 merged[1] = min(merged[1], box2[1])
-#                 merged[2] = max(merged[2], box2[2])
-#                 merged[3] = max(merged[3], box2[3])
-#                 used.add(j)
-
-#         merged_boxes.append(merged)
-
-#     return torch.stack(merged_boxes)
-
-# def draw_boxes(image, boxes, color='r', label=None):
-#     fig, ax = plt.subplots(1, figsize=(8, 8))
-#     ax.imshow(image)
-
-#     for box in boxes:
-#         x1, y1, x2, y2 = box
-#         width = x2 - x1
-#         height = y2 - y1
-#         rect = patches.Rectangle((x1, y1), width, height, linewidth=2, edgecolor=color, facecolor='none')
-#         ax.add_patch(rect)
-#         if label:
-#             ax.text(x1, y1 - 5, label, color=color, fontsize=12, backgroundcolor="white")
-
-#     plt.axis('off')
-#     return fig
-
-# # Streamlit UI
-# st.title("Detecting Number of Trees")
-# st.write("Upload an image to detect objects and merge bounding boxes.")
-
-# # File uploader
-# uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-
-# if uploaded_file:
-#     # Save and load the uploaded image
-#     image = Image.open(uploaded_file)
-#     image_path = f"temp_{uploaded_file.name}"
-#     image.save(image_path)
-
-#     st.image(image, caption="Uploaded Image", use_column_width=True)
-
-#     # Load YOLO model
-#     st.write("Loading YOLO model...")
-#     HOME = os.getcwd() # Update if running locally
-#     model_trained = YOLO(f'{HOME}/runs/detect/train/weights/best.pt')
-
-#     # Run YOLO prediction
-#     st.write("Running YOLO detection...")
-#     results = model_trained.predict(source=image_path, conf=0.10, save=True)[0]
-
-#     # Extract bounding boxes
-#     boxes = results.boxes.xyxy.cpu()
-
-#     # Merge overlapping boxes
-#     st.write("Merging overlapping bounding boxes...")
-#     iou_threshold = 0.5
-#     merged_boxes = merge_boxes(boxes, iou_threshold)
-
-#     # # Visualize original boxes
-#     # st.write("Visualizing original bounding boxes...")
-#     # fig_original = draw_boxes(image, boxes, color='r', label='Original')
-#     # st.pyplot(fig_original)
-
-#     # Visualize merged boxes
-#     st.write(f"A total of {len(merged_boxes)} trees have been detected")
-#     st.write("Visualizing bounding boxes.")
-#     fig_merged = draw_boxes(image, merged_boxes, color='g', label='Tree')
-#     st.pyplot(fig_merged)
-
-#     # Clean up temporary file
-#     os.remove(image_path)
-
-
 import streamlit as st
 from PIL import Image
 import torch
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from ultralytics import YOLO
-import os
-import streamlit as st
-from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import os
@@ -125,6 +8,10 @@ from io import BytesIO
 import requests
 from inference_sdk import InferenceHTTPClient
 from ultralytics import YOLO
+import streamlit as st
+import requests
+from PIL import Image
+from io import BytesIO
 
 # Define functions for IoU and box merging
 def compute_iou(box1, box2):
@@ -182,12 +69,6 @@ def draw_boxes(image, boxes, color='r', label=None):
     plt.axis('off')
     return fig
 
-import streamlit as st
-import requests
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from PIL import Image
-from io import BytesIO
 
 # Define function to draw polygons (from the first code)
 def draw_polygons_on_image(image_path, predictions):
@@ -251,7 +132,6 @@ def calculate_real_world_areas(json_data):
             real_world_area_meters = area_in_pixels * area_per_pixel
             real_world_area_feet = real_world_area_meters * square_meter_to_square_feet
 
-            # Display the detected area in Streamlit
             st.write(f"Detected segment class {prediction['class_id']} - Area: {real_world_area_feet:.2f} square feet")
 
             if prediction['class_id'] == 0:
@@ -262,25 +142,19 @@ def calculate_real_world_areas(json_data):
     total_tree_real_area_meters = tree_image_area * area_per_pixel
     total_tree_real_area_feet = total_tree_real_area_meters * square_meter_to_square_feet
     
-    # Display the total area in Streamlit
     st.write(f"Total Relative Tree Area: {total_tree_real_area_feet:.2f} square feet")
 
-# Streamlit UI
-st.title("Detecting Wounds and Sticker Areas / Trees Detection")
+st.title("Calculating Trees Area")
 
-# Navigation between pages
 page = st.sidebar.selectbox("Choose a page", ["Segment Detection", "Tree Detection"])
 
 
-# Segment detection page
 if page == "Segment Detection":
     st.header("Segment Detection with Polygon Overlay")
 
-    # File uploader
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
-        # Save and load the uploaded image
         image = Image.open(uploaded_file)
         image_path = f"temp_{uploaded_file.name}"
         image.save(image_path)
@@ -298,41 +172,33 @@ if page == "Segment Detection":
             images={"image": image_path}
         )
 
-        # Extract predictions
         predictions = result[0]['predictions']['predictions']
         draw_polygons_on_image(image_path, predictions)
         calculate_real_world_areas(result)
 
-        # Clean up temporary file
         os.remove(image_path)
 
 # Tree detection page
 elif page == "Tree Detection":
     st.header("Tree Detection using YOLO")
 
-    # File uploader
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
-        # Save and load the uploaded image
         image = Image.open(uploaded_file)
         image_path = f"temp_{uploaded_file.name}"
         image.save(image_path)
 
         st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        # Load YOLO model
-        HOME = os.getcwd()  # Update if running locally
+        HOME = os.getcwd()  
         model_trained = YOLO(f'{HOME}/runs/detect/train/weights/best.pt')
 
-        # Run YOLO prediction
         st.write("Running YOLO detection...")
         results = model_trained.predict(source=image_path, conf=0.10, save=True)[0]
 
-        # Extract bounding boxes
         boxes = results.boxes.xyxy.cpu()
 
-        # Merge overlapping boxes
         iou_threshold = 0.5
         merged_boxes = merge_boxes(boxes, iou_threshold)
 
@@ -341,6 +207,5 @@ elif page == "Tree Detection":
         fig_merged = draw_boxes(image, merged_boxes, color='g', label='Tree')
         st.pyplot(fig_merged)
 
-        # Clean up temporary file
         os.remove(image_path)
 
