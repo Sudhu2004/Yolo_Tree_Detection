@@ -271,6 +271,7 @@ st.title("Detecting Wounds and Sticker Areas / Trees Detection")
 # Navigation between pages
 page = st.sidebar.selectbox("Choose a page", ["Segment Detection", "Tree Detection"])
 
+
 # Segment detection page
 if page == "Segment Detection":
     st.header("Segment Detection with Polygon Overlay")
@@ -288,7 +289,7 @@ if page == "Segment Detection":
 
         client = InferenceHTTPClient(
             api_url="https://detect.roboflow.com",
-            api_key="avgmG1e5oTdC0oTkh1an"
+            api_key = st.secrets["roboflowApi"]
         )
 
         result = client.run_workflow(
