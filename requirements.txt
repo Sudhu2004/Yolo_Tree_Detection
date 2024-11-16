@@ -1,4 +1,3 @@
-torch
 ultralytics 
 supervision 
 roboflow
